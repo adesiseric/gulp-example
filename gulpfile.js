@@ -164,11 +164,9 @@
     });
 
     gulp.task('watch', function () {
-        // gulp.watch(paths.sass, ['sass']);
         gulp.watch(paths.scripts, ['processScripts']);
         gulp.watch(paths.jade, ['jade']);
         gulp.watch(paths.sass, ['css']);
-        // gulp.watch(paths.scripts, ['js']);
     });
 
     gulp.task('dist', function (done) {
