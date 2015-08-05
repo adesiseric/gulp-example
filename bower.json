@@ -1,0 +1,26 @@
+{
+  "name": "gulp-ex",
+  "version": "0.0.0",
+  "authors": [
+    "Eric Maya <ericmaya8a@gmail.com>"
+  ],
+  "description": "gulp example",
+  "main": "gulpfile.js",
+  "moduleType": [
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4",
+    "angular": "~1.4.3",
+    "angular-route": "~1.4.3",
+    "bootstrap": "~3.3.5"
+  }
+}

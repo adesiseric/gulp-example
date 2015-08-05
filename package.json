@@ -1,0 +1,33 @@
+{
+  "name": "gulp-ex",
+  "version": "0.0.0",
+  "description": "gulp example",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-uglify": "^1.2.0",
+    "gulp-if": "^1.2.5",
+    "gulp-concat": "^2.6.0",
+    "gulp-beautify": "^1.1.2",
+    "gulp-sass": "^2.0.4",
+    "del": "^1.2.0",
+    "g": "^2.0.0",
+    "gulp-html2js": "^0.2.0",
+    "run-sequence": "^1.1.2",
+    "gulp-minify-css": "^1.2.0",
+    "gulp-jshint": "^1.11.2",
+    "jshint-stylish": "^2.0.1",
+    "gulp-jade": "^1.1.0",
+    "jade": "^1.11.0",
+    "gulp-inject": "^1.5.0",
+    "gulp-webserver": "^0.9.1",
+    "main-bower-files": "^2.9.0",
+    "event-stream": "^3.3.1",
+    "gulp-ng-annotate": "^1.1.0"
+  }
+}
