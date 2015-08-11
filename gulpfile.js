@@ -237,26 +237,27 @@
 
     // Main tasks dist
 
-    gulp.task('build-dist', function (done) {
-        runSequence(
-            'clean',
-            'gulpJshint',
-            'html2js',
-            'jade-dist',
-            'jade-index-dist',
-            'copy-dist',
-            done
-        );
-    });
+    gulp.task('start-build-dist', [
+        'clean',
+        'gulpJshint',
+        'html2js',
+        'jade-dist',
+        'jade-index-dist',
+        'copy-dist'
+    ]);
 
     gulp.task('scripts-dist', ['process-scripts-dist', 'sass-dist']);
+
+    gulp.task('build-dist', ['start-build-dist'], function () {
+        runSequence('scripts-dist');
+    });
 
     gulp.task('dist', ['inject-dist']);
 
 
     // Main tasks build
 
-    gulp.task('build', function (done) {
+    gulp.task('build', function () {
         runSequence(
             'clean',
             'gulpJshint',
@@ -265,8 +266,7 @@
             'jade-index',
             'copy',
             'copy-templates',
-            'css',
-            done
+            'css'
         );
     });
 
