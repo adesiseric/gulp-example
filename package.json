@@ -28,6 +28,7 @@
     "gulp-webserver": "^0.9.1",
     "main-bower-files": "^2.9.0",
     "event-stream": "^3.3.1",
-    "gulp-ng-annotate": "^1.1.0"
+    "gulp-ng-annotate": "^1.1.0",
+    "gulp-image-optimization": "^0.1.3"
   }
 }

@@ -8,6 +8,7 @@
     var concat = require('gulp-concat');
     var gulpif = require('gulp-if');
     var sass = require('gulp-sass');
+    var imageop = require('gulp-image-optimization');
     var del = require('del');
     var html2js = require('gulp-html2js');
     var runSequence = require('run-sequence');
@@ -76,9 +77,19 @@
             .pipe(gulp.dest(paths.build));
     });
 
+    gulp.task('images' , function (cb) {
+        gulp.src([paths.images])
+        .pipe(imageop({
+            optimizationLavel: 2,
+            progressive: true,
+            interlaced: true
+        }))
+        .pipe(gulp.dest(paths.build + '/images'))
+        .on('end', cb)
+        .on('error', cb);
+    });
+
     gulp.task('copy', function () {
-        gulp.src(paths.images)
-            .pipe(gulp.dest('build/images'));
         gulp.src(paths.bower)
             .pipe(gulp.dest('build/bower_components'));
     });
@@ -179,9 +190,19 @@
         .pipe(gulp.dest(paths.dist + '/styles'));
     });
 
+    gulp.task('images-dist' , function (cb) {
+        gulp.src([paths.images])
+        .pipe(imageop({
+            optimizationLavel: 3,
+            progressive: true,
+            interlaced: true
+        }))
+        .pipe(gulp.dest(paths.dist + '/images'))
+        .on('end', cb)
+        .on('error', cb);
+    });
+
     gulp.task('copy-dist', function () {
-        gulp.src(paths.images)
-            .pipe(gulp.dest('dist/images'));
         gulp.src(paths.bower)
             .pipe(gulp.dest('dist/bower_components'));
     });
@@ -243,6 +264,7 @@
         'html2js',
         'jade-dist',
         'jade-index-dist',
+        'images-dist',
         'copy-dist'
     ]);
 
@@ -264,6 +286,7 @@
             'processScripts',
             'jade',
             'jade-index',
+            'images',
             'copy',
             'copy-templates',
             'css'
