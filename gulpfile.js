@@ -32,6 +32,8 @@
         build: './build'
     };
 
+    // Build tasks
+
     gulp.task('clean', function (done) {
         del([paths.dist, paths.build, './app/scripts/tpl']);
         done();
@@ -74,6 +76,39 @@
             .pipe(gulp.dest(paths.build));
     });
 
+    gulp.task('copy', function () {
+        gulp.src(paths.images)
+            .pipe(gulp.dest('build/images'));
+        gulp.src(paths.bower)
+            .pipe(gulp.dest('build/bower_components'));
+    });
+
+    gulp.task('copy-templates', function() {
+        gulp.src('./app/templates/*.html')
+        .pipe(html2js({
+            outputModuleName: 'template-test',
+            useStrict: true
+        }))
+        .pipe(concat('template.js'))
+        .pipe(gulp.dest('./build/scripts/tpl'));
+    });
+
+    gulp.task('css', function () {
+        gulp.src(paths.sass)
+        .pipe(sass())
+        .pipe(gulp.dest('build/styles'));
+    });
+
+    gulp.task('server', function () {
+        gulp.src(paths.build)
+        .pipe(webserver({
+            host: '0.0.0.0',
+            port: 8080,
+            fallback: 'index.html',
+            livereload: true
+        }));
+    });
+
     gulp.task('inject', function () {
         var sources = es.merge(gulp.src(['build/scripts/**/*.js', 'build/styles/**/*.css'], {
             read: false
@@ -105,6 +140,14 @@
         .pipe(gulp.dest(paths.build));
     });
 
+    gulp.task('watch', function () {
+        gulp.watch(paths.scripts, ['processScripts']);
+        gulp.watch(paths.jade, ['jade']);
+        gulp.watch(paths.sass, ['css']);
+    });
+
+    // Dist tasks
+
     gulp.task('html2js', function () {
         gulp.src('./app/templates/*.html')
         .pipe(html2js({
@@ -115,72 +158,103 @@
         .pipe(gulp.dest('./app/scripts/tpl'));
     });
 
-    gulp.task('copy', function () {
-        gulp.src(paths.images)
-            .pipe(gulp.dest('build/images'));
-        gulp.src(paths.bower)
-            .pipe(gulp.dest('build/bower_components'));
-    });
-
-    gulp.task('copy-templates', function() {
-        gulp.src('./app/templates/*.html')
-        .pipe(html2js({
-            outputModuleName: 'template-test',
-            useStrict: true
+    gulp.task('process-scripts-dist', function () {
+        return gulp.src(['./app/scripts/app.js', paths.scripts, './app/scripts/tpl/*.js'])
+        .pipe(jshint())
+        .pipe(jshint.reporter(stylish))
+        .pipe(jshint.reporter('fail'))
+        .pipe(ngAnnotate({
+            add: true,
+            single_quotes: true
         }))
-        .pipe(concat('template.js'))
-        .pipe(gulp.dest('./build/scripts/tpl'));
+        .pipe(concat('all.min.js'))
+        .pipe(uglify())
+        .pipe(gulp.dest(paths.dist + '/scripts'));
     });
 
-    gulp.task('css', function () {
-        gulp.src(paths.sass)
-        .pipe(sass())
-        .pipe(gulp.dest('build/styles'));
-    });
-
-    gulp.task('sass', function () {
+    gulp.task('sass-dist', function () {
         gulp.src(paths.sass)
         .pipe(sass())
         .pipe(minifyCss({compability: 'ie8'}))
-        .pipe(gulp.dest(paths.dist));
+        .pipe(gulp.dest(paths.dist + '/styles'));
     });
 
-    gulp.task('js', function () {
-        gulp.src(['./scripts/app.js', paths.scripts, './scripts/tpl/*.js'])
-        .pipe(concat('all.min.js'))
-        .pipe(gulpif(process.env.NODE_ENV === 'production',uglify()))
-        .pipe(gulpif(process.env.NODE_ENV !== 'production', beautify()))
-        .pipe(gulp.dest(paths.dist));
+    gulp.task('copy-dist', function () {
+        gulp.src(paths.images)
+            .pipe(gulp.dest('dist/images'));
+        gulp.src(paths.bower)
+            .pipe(gulp.dest('dist/bower_components'));
     });
 
-    gulp.task('server', function () {
-        gulp.src(paths.build)
-        .pipe(webserver({
-            host: '0.0.0.0',
-            port: 8080,
-            fallback: 'index.html',
-            livereload: true
+    gulp.task('jade-dist', function () {
+        return gulp.src([paths.jade, '!{,**/}{includes,mixins,layout}/{,**/}*.jade'])
+            .pipe(gulpJade({
+                jade: jade,
+                pretty: false
+            }))
+            .pipe(gulp.dest('dist/views'));
+    });
+
+    gulp.task('jade-index-dist', function () {
+        return gulp.src('./app/index.jade')
+            .pipe(gulpJade({
+                jade: jade,
+                pretty: false
+            }))
+            .pipe(gulp.dest(paths.dist));
+    });
+
+    gulp.task('inject-dist', function () {
+        var sources = es.merge(gulp.src(['dist/scripts/**/*.js', 'dist/styles/**/*.css'], {
+            read: false
         }));
+        var bowerSources = gulp.src(bowerFiles({
+            paths: {
+                bowerDirectory: 'dist/bower_components',
+                bowerrc: './.bowerrc',
+                bowerJson: './bower.json'
+            }
+        }), {
+            read: false
+        });
+
+        gulp.src('dist/index.html')
+        .pipe(inject(sources, {
+            addRootSlash: true,
+            relative: true,
+            starttag: '<!-- local_dependencies:{{ext}} -->',
+            endtag: '<!-- local_dependencies -->',
+        }))
+        .pipe(inject(bowerSources, {
+            name: 'bower',
+            addRootSlash: true,
+            relative: true,
+            starttag: '<!-- bower_dependencies:{{ext}} -->',
+            endtag: '<!-- bower_dependencies -->',
+        }))
+        .pipe(gulp.dest(paths.dist));
     });
 
-    gulp.task('watch', function () {
-        gulp.watch(paths.scripts, ['processScripts']);
-        gulp.watch(paths.jade, ['jade']);
-        gulp.watch(paths.sass, ['css']);
-    });
+    // Main tasks dist
 
-    gulp.task('dist', function (done) {
+    gulp.task('build-dist', function (done) {
         runSequence(
             'clean',
             'gulpJshint',
-            'processScripts',
             'html2js',
-            'sass',
-            'js',
-            'watch',
+            'jade-dist',
+            'jade-index-dist',
+            'copy-dist',
             done
         );
     });
+
+    gulp.task('scripts-dist', ['process-scripts-dist', 'sass-dist']);
+
+    gulp.task('dist', ['inject-dist']);
+
+
+    // Main tasks build
 
     gulp.task('build', function (done) {
         runSequence(
